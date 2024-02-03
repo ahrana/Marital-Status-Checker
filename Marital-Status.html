@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marital Status Checker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<style>
+    body {
+        background-color: #233142;
+        color: #e3e3e3;
+        padding-top: 50px;
+        position: relative;
+    }
+
+    .marriage-form, .divorce-form, .nearest-office-popup {
+        display: none;
+    }
+
+    .search-result {
+        display: none;
+    }
+
+    .animated-search {
+        width: 100%;
+        position: relative;
+        border: 2px solid #e3e3e3;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .animated-search input[type="text"] {
+        width: calc(100% - 100px);
+        padding: 10px;
+        border: none;
+        background-color: transparent;
+        color: #e3e3e3;
+        transition: width 0.4s ease-in-out;
+    }
+
+    .animated-search button {
+        width: 90px;
+        height: 40px;
+        border: none;
+        background-color: #f95959;
+        color: #e3e3e3;
+        border-radius: 20px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        cursor: pointer;
+        transition: width 0.4s ease-in-out;
+    }
+
+    .animated-search button:hover {
+        background-color: #b80257;
+    }
+
+    .animated-search:focus-within input[type="text"] {
+        width: calc(100% - 140px);
+    }
+
+    .animated-search:focus-within button {
+        width: 130px;
+    }
+
+    .popup-content {
+        background-color: #455d7a;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .entry {
+        margin-bottom: 20px;
+    }
+
+    .title-box {
+        background-color: #b80257;
+        color: #e3e3e3;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+    }
+
+    .credit-popup {
+        display: none;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background-color: #455d7a;
+        color: #e3e3e3;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 999;
+    }
+
+    .credit-popup.show {
+        display: block;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Marital Status Checker</h1>
+
+    <!-- Popup button for new marriage register -->
+    <button onclick="openMarriageForm()" class="btn btn-primary">Register New Marriage</button>
+
+    <!-- Popup button for status check -->
+    <button onclick="openSearchForm()" class="btn btn-info">Check Status</button>
+
+    <!-- Popup button for divorce entry -->
+    <button onclick="openDivorceForm()" class="btn btn-danger">File for Divorce</button>
+
+    <!-- Floating button for finding nearest marriage register office -->
+    <button onclick="openNearestOfficePopup()" class="btn btn-success floating-button">Find Nearest Marriage Register Office</button>
+
+    <!-- Three dots button for developer credit -->
+    <button onclick="toggleCreditPopup()" class="btn btn-secondary">...</button>
+
+    <!-- Credit popup -->
+    <div id="creditPopup" class="credit-popup">
+        Designed By Rana, Bangladesh
+    </div>
+
+    <!-- Marriage Form Popup -->
+    <div id="marriageForm" class="marriage-form">
+        <div class="popup-content">
+            <button class="btn btn-danger" onclick="closeMarriageForm()">Close</button>
+            <h2>Marriage Registration Form</h2>
+            <form>
+                <div class="mb-3">
+                    <label for="husbandName" class="form-label">Husband's Name</label>
+                    <input type="text" class="form-control" id="husbandName" placeholder="Enter husband's name">
+                </div>
+                <div class="mb-3">
+                    <label for="wifeName" class="form-label">Wife's Name</label>
+                    <input type="text" class="form-control" id="wifeName" placeholder="Enter wife's name">
+                </div>
+                <div class="mb-3">
+                    <label for="marriageDate" class="form-label">Date of Marriage</label>
+                    <input type="date" class="form-control" id="marriageDate">
+                </div>
+                <div class="mb-3">
+                    <label for="marriageLocation" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="marriageLocation" placeholder="Enter marriage location">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="saveMarriage()">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Divorce Form Popup -->
+    <div id="divorceForm" class="divorce-form">
+        <div class="popup-content">
+            <button class="btn btn-danger" onclick="closeDivorceForm()">Close</button>
+            <h2>Divorce Application Form</h2>
+            <form>
+                <div class="mb-3">
+                    <label for="divorceName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="divorceName" placeholder="Enter name">
+                </div>
+                <div class="mb-3">
+                    <label for="divorceReason" class="form-label">Reason for Divorce</label>
+                    <input type="text" class="form-control" id="divorceReason" placeholder="Enter reason for divorce">
+                </div>
+                <div class="mb-3">
+                    <label for="divorceDate" class="form-label">Date of Divorce</label>
+                    <input type="date" class="form-control" id="divorceDate">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="saveDivorce()">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Nearest Marriage Register Office Popup -->
+    <div id="nearestOfficePopup" class="nearest-office-popup">
+        <div class="popup-content animated-effect">
+            <button class="btn btn-danger" onclick="closeNearestOfficePopup()">Close</button>
+            <h2>Find Nearest Marriage Register Office</h2>
+            <p>Dummy office address 1</p>
+            <p>Dummy office address 2</p>
+            <p>Dummy office address 3</p>
+            <!-- Add more dummy office addresses as needed -->
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="animated-search">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button onclick="search()" class="btn btn-primary">Search</button>
+    </div>
+
+    <!-- Search Result -->
+    <div id="searchResult" class="search-result">
+        <h2>Search Result</h2>
+        <p id="marriageInfo"></p>
+        <p id="divorceInfo"></p>
+    </div>
+
+    <!-- Marriage and Divorce Entries -->
+    <div id="entries" class="row">
+        <!-- Marriage Column -->
+        <div class="col-md-6">
+            <div class="title-box">Newly Marriage</div>
+        </div>
+        <!-- Divorce Column -->
+        <div class="col-md-6">
+            <div class="title-box">Newly Divorce</div>
+        </div>
+    </div>
+
+    <!-- Dummy data for search -->
+    <div id="dummyData" style="display: none;">
+        <div data-type="marriage" data-name="John Doe" data-marriage-date="2023-01-15" data-husband-age="35" data-wife-name="Jane Doe" data-wife-age="32" data-marriage-location="New York"></div>
+        <div data-type="marriage" data-name="Michael Johnson" data-marriage-date="2022-05-20" data-husband-age="40" data-wife-name="Emily Johnson" data-wife-age="38" data-marriage-location="Los Angeles"></div>
+        <div data-type="divorce" data-name="John Doe" data-divorce-date="2024-01-28" data-divorce-reason="Mutual agreement"></div>
+        <div data-type="divorce" data-name="Jane Smith" data-divorce-date="2023-09-10" data-divorce-reason="Irreconcilable differences"></div>
+    </div>
+</div>
+
+<script>
+    function openMarriageForm() {
+        document.getElementById("marriageForm").style.display = "block";
+    }
+
+    function closeMarriageForm() {
+        document.getElementById("marriageForm").style.display = "none";
+    }
+
+    function openDivorceForm() {
+        document.getElementById("divorceForm").style.display = "block";
+    }
+
+    function closeDivorceForm() {
+        document.getElementById("divorceForm").style.display = "none";
+    }
+
+    function openSearchForm() {
+        document.getElementById("searchResult").style.display = "none";
+        document.getElementById("searchInput").value = "";
+    }
+
+    function openNearestOfficePopup() {
+        document.getElementById("nearestOfficePopup").style.display = "block";
+    }
+
+    function closeNearestOfficePopup() {
+        document.getElementById("nearestOfficePopup").style.display = "none";
+    }
+
+    function toggleCreditPopup() {
+        const creditPopup = document.getElementById("creditPopup");
+        creditPopup.classList.toggle("show");
+    }
+
+    function saveMarriage() {
+        const husbandName = document.getElementById("husbandName").value;
+        const wifeName = document.getElementById("wifeName").value;
+        const marriageDate = document.getElementById("marriageDate").value;
+        const marriageLocation = document.getElementById("marriageLocation").value;
+
+        // Save to browser cache or database
+        console.log("Marriage details saved:", husbandName, wifeName, marriageDate, marriageLocation);
+
+        // Add new marriage entry to home page
+        const entry = document.createElement("div");
+        entry.classList.add("col-md-6", "entry");
+        entry.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Marriage</h5>
+                    <p class="card-text">Husband's Name: ${husbandName}</p>
+                    <p class="card-text">Wife's Name: ${wifeName}</p>
+                    <p class="card-text">Marriage Date: ${marriageDate}</p>
+                    <p class="card-text">Location: ${marriageLocation}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById("entries").appendChild(entry);
+
+        // Close marriage form
+        closeMarriageForm();
+    }
+
+    function saveDivorce() {
+        const divorceName = document.getElementById("divorceName").value;
+        const divorceReason = document.getElementById("divorceReason").value;
+        const divorceDate = document.getElementById("divorceDate").value;
+
+        // Save to browser cache or database
+        console.log("Divorce details saved:", divorceName, divorceReason, divorceDate);
+
+        // Add new divorce entry to home page
+        const entry = document.createElement("div");
+        entry.classList.add("col-md-6", "entry");
+        entry.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Divorce</h5>
+                    <p class="card-text">Name: ${divorceName}</p>
+                    <p class="card-text">Divorce Date: ${divorceDate}</p>
+                    <p class="card-text">Reason: ${divorceReason}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById("entries").appendChild(entry);
+
+        // Close divorce form
+        closeDivorceForm();
+    }
+
+    function search() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const dummyData = document.getElementById("dummyData").getElementsByTagName("div");
+        let marriageInfo = "";
+        let divorceInfo = "";
+
+        for (let i = 0; i < dummyData.length; i++) {
+            const name = dummyData[i].getAttribute("data-name");
+            const type = dummyData[i].getAttribute("data-type");
+            if (name.toLowerCase() === searchTerm) {
+                const registerNumber = i + 1; // Adding 1 to make it human-readable (1-indexed)
+                if (type === "marriage") {
+                    const marriageDate = dummyData[i].getAttribute("data-marriage-date");
+                    const husbandAge = dummyData[i].getAttribute("data-husband-age");
+                    const wifeAge = dummyData[i].getAttribute("data-wife-age");
+                    const marriageLocation = dummyData[i].getAttribute("data-marriage-location");
+                    marriageInfo = `Register Number: ${registerNumber}<br>Married on ${marriageDate}, Husband's Age: ${husbandAge}, Wife's Age: ${wifeAge}, Location: ${marriageLocation}`;
+                } else if (type === "divorce") {
+                    const divorceDate = dummyData[i].getAttribute("data-divorce-date");
+                    const divorceReason = dummyData[i].getAttribute("data-divorce-reason");
+                    divorceInfo = `Register Number: ${registerNumber}<br>Divorced on ${divorceDate}, Reason: ${divorceReason}`;
+                }
+                break;
+            }
+        }
+
+        document.getElementById("marriageInfo").innerHTML = marriageInfo;
+        document.getElementById("divorceInfo").innerHTML = divorceInfo;
+
+        document.getElementById("searchResult").style.display = "block";
+    }
+
+    // Display dummy data entries on page load
+    document.addEventListener("DOMContentLoaded", function() {
+        const dummyData = document.getElementById("dummyData").getElementsByTagName("div");
+        for (let i = 0; i < dummyData.length; i++) {
+            const type = dummyData[i].getAttribute("data-type");
+            const entry = document.createElement("div");
+            entry.classList.add("col-md-6", "entry");
+            entry.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${type.charAt(0).toUpperCase() + type.slice(1)}</h5>
+                        ${type === "marriage" ?
+                            `<p class="card-text">Husband's Name: ${dummyData[i].getAttribute("data-name")}</p>
+                            <p class="card-text">Wife's Name: ${dummyData[i].getAttribute("data-wife-name")}</p>
+                            <p class="card-text">Marriage Date: ${dummyData[i].getAttribute("data-marriage-date")}</p>
+                            <p class="card-text">Location: ${dummyData[i].getAttribute("data-marriage-location")}</p>` :
+                            `<p class="card-text">Name: ${dummyData[i].getAttribute("data-name")}</p>
+                            <p class="card-text">Divorce Date: ${dummyData[i].getAttribute("data-divorce-date")}</p>
+                            <p class="card-text">Reason: ${dummyData[i].getAttribute("data-divorce-reason")}</p>`}
+                    </div>
+                </div>
+            `;
+            document.getElementById("entries").appendChild(entry);
+        }
+    });
+</script>
+
+</body>
+</html>
